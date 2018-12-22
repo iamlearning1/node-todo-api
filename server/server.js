@@ -1,33 +1,12 @@
-const mongoose = require('mongoose')
+const express = require('express')
+const bodyParcer = require('body-parser')
 
-mongoose.Promise = global.Promise
-mongoose.connect('mongodb://localhost:27017/TodoApp')
+const { mongoose } = require('./db/mongoose')
+const { Todo } = require('./models/todo')
+const { User } = require('./models/user')
 
-const Todo = mongoose.model('Todo', {
-    text: {
-        type: String
-    },
-    completed: {
-        type: Boolean
-    },
-    completedAt: {
-        type: Number
-    }
-})
+const app = express()
 
-// const newTodo = new Todo({
-//     text: 'NodeJS',
-//     completed: false
-// })
-
-const newTodo = new Todo({
-    text: 'React',
-    completed: true,
-    completedAt: new Date().getMilliseconds()
-})
-
-newTodo.save().then((doc) => {
-    console.log(doc)
-}).catch(error => {
-    console.log(error)
+app.listen(3000, () => {
+    console.log('Started on port 3000')
 })
