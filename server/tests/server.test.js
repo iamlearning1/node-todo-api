@@ -185,7 +185,7 @@ describe('POST /users', () => {
     it('should create a user', (done) => {
         const email = 't11est@test.com'
         const password = '122gdd56'
-        
+
         request(app)
             .post('/users')
             .send({ email, password })
@@ -201,7 +201,7 @@ describe('POST /users', () => {
                     expect(user).toExist()
                     expect(user.password).toNotBe(password)
                     done()
-                })
+                }).catch(error => done(error))
             })
     })
 
@@ -225,5 +225,50 @@ describe('POST /users', () => {
             .send({ email, password })
             .expect(400)
             .end(done)
+    })
+})
+
+describe('POST /users/login', () => {
+    it('should login user and return auth token', (done) => {
+        request(app)
+            .post('/users/login')
+            .send({
+                email: users[1].email,
+                password: users[1].password
+            })
+            .expect(200)
+            .expect(response => {
+                expect(response.header['x-auth']).toExist()
+            })
+            .end((error, response) => {
+                if (error) return done(error)
+                User.findById(users[1]._id).then(user => {
+                    expect(user.tokens[0]).toInclude({
+                        access: 'auth',
+                        token: response.headers['x-auth']
+                    })
+                    done()
+                }).catch(error => done(error))
+            })
+    })
+
+    it('should reject invalid login', (done) => {
+        request(app)
+            .post('/users/login')
+            .send({
+                email: users[1].email,
+                password: 'users[1].password'
+            })
+            .expect(400)
+            .expect(response => {
+                expect(response.header['x-auth']).toNotExist()
+            })
+            .end((error, response) => {
+                if (error) return done(error)
+                User.findById(users[1]._id).then(user => {
+                    expect(user.tokens.length).toBe(0)
+                    done()
+                }).catch(error => done(error))
+            })
     })
 })
