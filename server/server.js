@@ -98,6 +98,18 @@ app.post('/users', (request, response) => {
     })
 })
 
+app.post('/users/login', (request, response) => {
+    const body = _.pick(request.body, ['email', 'password'])
+
+    User.findByCredentials(body.email, body.password).then((user) => {
+        return user.generateAuthToken().then(token => {
+            response.header('x-auth', token).send(user)
+        })
+    }).catch(error => {
+        response.status(400).send(error)
+    })
+})
+
 const authenticate = (request, response, next) => {
     const token = request.header('x-auth')
     User.findByToken(token).then((user) => {
